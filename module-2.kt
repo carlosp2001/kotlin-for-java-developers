@@ -1,5 +1,7 @@
 import java.awt.Color
 import java.awt.Color.*
+import java.time.LocalDate
+import kotlin.random.Random
 
 // Example of class in Java
 /*
@@ -199,7 +201,7 @@ fun main() {
 
     print(getDescription(BLUE)) // prints cold
 
-    fun respondToInput(input: String) = when(input) {
+    fun respondToInput(input: String) = when (input) {
         "y", "yes" -> "I'm glad you agree"
         "n", "no" -> "Sorry to hear that"
         else -> "I don't understand you"
@@ -209,7 +211,7 @@ fun main() {
 
     // Any expression can be used as a branch condition
     fun mix(c1: Color, c2: Color) =
-        when(setOf(c1, c2)) {
+        when (setOf(c1, c2)) {
             setOf(RED, YELLOW) -> ORANGE
             setOf(YELLOW, BLUE) -> GREEN
             setOf(BLUE) -> ORANGE
@@ -228,7 +230,7 @@ fun main() {
             "Clean the litter"
     }
 
-    class Dog: Pet() {
+    class Dog : Pet() {
         fun walk() =
             "Walk the dog"
     }
@@ -255,5 +257,138 @@ fun main() {
             degrees < 25 -> "mild" to YELLOW
             else -> "hot" to RED
         }
+    }
+
+    // Loops in Kotlin
+    // Do while is the same as in Java
+    var x = 0
+    do {
+        x++
+        println(x)
+    } while (x < 5)
+
+    // For loop
+    val list = listOf("a", "b", "c")
+    for (s in list) {
+        println(s)
+    }
+
+    // We can iterate over a map
+    for ((index, element) in list.withIndex()) {
+        println("$index: $element")
+    }
+
+    // Iterating over a range
+    for (i in 1..9) { // Included upper bound
+        println(i)
+    }
+
+    for (i in 1 until 9) { // Excluded upper bound
+        println(i)
+    }
+
+    // Advanced for loops
+    for (i in 9 downTo 1 step 2) {
+        println(i) // 9, 7, 5, 3, 1
+    }
+
+    for (ch in "abc") {
+        print(ch + 1) // bcd
+    }
+
+    // in can be used to check if a value is in a range
+    fun isLetter(c: Char) = c in 'a'..'z' || c in 'A'..'Z'
+
+    isLetter('q')
+    isLetter('*')
+
+    // This is what it does in Java
+    /*
+    public static boolean isLetter(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+     */
+
+    // Not in a range
+    fun isNotDigit(c: Char) = c !in '0'..'9'
+    isNotDigit('x')
+
+    // Using in with when expression
+    fun recognize(c: Char) = when (c) {
+        in '0'..'9' -> "It's a digit!"
+        in 'a'..'z', in 'A'..'Z' -> "It's a letter!"
+        else -> "I don't know"
+    }
+    // Different ranges
+    1..9
+    1 until 9
+    'a'..'z'
+    "ab".."az"
+    val startDate = LocalDate.of(2021, 1, 1)
+    val endDate = LocalDate.of(2021, 12, 31)
+    startDate..endDate
+
+    // Lexicographical order
+    println("Kotlin" in "Java".."Scala") // prints true
+
+    // Range of custom types
+    // In order to use ranges with custom types, we need to implement the Comparable interface
+
+    // Check if an element belongs to a collection
+    val numbers = listOf("One", "Two", "Three")
+    println("Two" in numbers) // prints true, uses the equals method to search the element
+    // It's the same as numbers.contains("Two")
+
+    isValidIdentifier("")
+    isValidIdentifier("_federer")
+    isValidIdentifier("012")
+
+    // Exceptions in Kotlin
+    // No difference between checked and unchecked exceptions
+    // Throw is an expression
+    try {
+        val number = Random.nextInt(200)
+        val percentage =
+            if (number in 0..100)
+                number
+            else
+                throw IllegalArgumentException("A percentage value must be between 0 and 100: $number")
+        println(percentage)
+    } catch (e: IllegalArgumentException) {
+        println(e.message)
+    }
+
+    val testString = "ssersa"
+    // Try as an expression
+    val number = try {
+        Integer.parseInt(testString)
+    } catch (e: NumberFormatException) {
+        null
+    }
+
+    println(number)
+
+}
+
+fun isValidIdentifierWithRegex(identifier: String): Boolean {
+    val regex = "^[a-zA-Z_][a-zA-Z0-9_]*$".toRegex()
+    val matches = regex.matches(identifier)
+    println(matches)
+    return matches
+}
+
+fun isValidIdentifier(s: String): Boolean {
+    fun isValidCharacter(ch: Char) =
+        ch == '_' || ch in '0'..'9' || ch in 'a'..'z' || ch in 'A'..'Z'
+
+    if (s.isEmpty() || s[0] in '0'..'9') return false
+    for (ch in s) if (!isValidCharacter(ch)) return false
+
+    return true
+}
+
+@Throws(IllegalArgumentException::class) // We use this annotation to indicate that the method throws an exception in Java
+fun validatePercentage(number: Int) {
+    if (number !in 0..100) {
+        throw IllegalArgumentException("A percentage value must be between 0 and 100: $number")
     }
 }
