@@ -187,7 +187,155 @@ fun main() {
     val listOfMaps = listOf(mapOf("a" to 1, "b" to 2), mapOf("c" to 3, "d" to 4))
     val flatMapMaps = listOfMaps.flatMap { it.values }
     println(flatMapMaps)
+
+    ////////////////////////////////////////////////////////////
+    // Operations Quiz I
+    data class Hero(
+        val name: String,
+        val age: Int,
+        val gender: Gender?
+    )
+
+    val heroes = listOf(
+        Hero("The Captain", 60, Gender.MALE),
+        Hero("Frenchy", 42, Gender.MALE),
+        Hero("The Kid", 9, null),
+        Hero("Lady Lauren", 29, Gender.FEMALE),
+        Hero("First Mate", 29, Gender.MALE),
+        Hero("Sir Stephen", 37, Gender.MALE)
+    )
+
+    println(heroes.last().name) // If the list is empty, it throws an exception
+    println(heroes.lastOrNull()?.name) // If the list is empty, it returns null
+    println(heroes.firstOrNull { it.age == 30 }?.name) // If the list is empty, it returns null
+    println(heroes.map { it.age }
+        .distinct().size) // If the list is empty, it returns 0, returns the number of different ages
+    println(heroes.filter { it.age < 30 }.size) // If the list is empty, it returns 0,
+    val (youngest, oldest) = heroes.partition { it.age < 30 }
+    println(oldest.size) // If the list is empty, it returns 0
+
+    println(heroes.maxByOrNull { it.age }?.name) // If the list is empty, it returns null
+    println(heroes.maxBy { it.age }.name) // If the list is empty, it throws an exception
+    println(heroes.all { it.age < 50 }) // It returns true if all the elements match the condition, in case of an empty list, it returns true
+    println(heroes.any { it.gender == Gender.FEMALE }) // It returns true if any element matches the condition, in case of an empty list, it returns false
+    // Operations Quiz II
+    val mapByAge =
+        heroes.groupBy { it.age } // It returns a map with the age as key and the list of heroes with that age as value
+
+    val (age, group) = mapByAge.maxByOrNull { (_, group) -> group.size }!!// It returns the age with the most heroes
+    // El operador !! se usa para indicar que el valor no puede ser nulo, en caso de que sea nulo, se lanza una excepción
+
+    println(age) // It prints the age with the most heroes
+
+    val mapByName = heroes.associateBy { it.name } // It returns a map with the name as key and the hero as value
+    // AssociateBy returns a map with the key and the value of the list, if there are repeated keys, the last one is taken
+    mapByName["Frenchy"]?.let { println(it.age) } // It prints the age of the hero with the name Frenchy
+    // Another way to access elements in a map
+//    println(mapByName.getValue("unknown"))
+//    It throws an exception if the key is not found
+
+    println(
+        mapByName.getOrDefault(
+            "unknown",
+            Hero("Unknown", 0, null)
+        ).age
+    ) // It prints the age of the hero with the name unknown
+
+    val unknownHero = Hero("Unknown", 0, null)
+
+    // Using get or else to provide a default value
+    println(mapByName.getOrElse("unknown") { unknownHero }.age) // It prints the age of the hero with the name unknown
+
+    val (first, second) = heroes
+        .flatMap { heroes.map { hero -> it to hero } }
+        .maxBy { it.first.age - it.second.age } // It returns the pair of heroes with the biggest age difference
+    println(first.name)
+
+    // Using a better approach and sintax
+    val allPossiblePairs = heroes
+        .flatMap { firstHero -> heroes.map { secondHero -> firstHero to secondHero } }
+
+
+    val (oldestHero, youngestHero) = allPossiblePairs.maxBy { it.first.age - it.second.age }/// It returns the pair of heroes with the biggest age difference
+    println(oldestHero.name)
+
+    ////////////////////////////////////////////////////////////
+    // Function Type
+    val sumLambda: (Int, Int) -> Int = { x: Int, y: Int -> x + y }
+    sumLambda(1, 2)
+    val isEven = { i: Int -> i % 2 == 0 }
+    val resultIsEven = isEven(2)
+    println(resultIsEven)
+
+    // We can pass a lambda as a parameter
+    val listLambda = listOf(1, 2, 3, 4, 5)
+    println(listLambda.any(isEven))
+    println(listLambda.filter(isEven))
+
+    // Calling a lambda immediately'
+    val lambdaCallImmediately = {
+        println("Hello I'm Carlos from immediate call")
+    }()
+
+    // Using run
+    val runResult = run {
+        println("Hello I'm Carlos from immediate run")
+        42
+    }
+
+    // Nullable types in lambda functions
+//    val f1: () -> Int? = null // Not compile time error
+    val f2: () -> Int? = { null } // It means that the function can return null
+    val f3: (() -> Int)? = null // It means that the function can be null
+//    val f4: (() -> Int)? = { null } // It means that the function can be null but it can't return null, cannot compile
+    // Working with nullable types in lambda functions
+    if (f3 != null) {
+        f3()
+    }
+
+    // Alternative is to use the safe accessor
+    f3?.invoke()
+
+    ////////////////////////////////////////////////////////////
+    // Member references
+    class Person(val name: String, val age: Int) {
+        fun isOlder(ageLimit: Int): Boolean = age > ageLimit
+
+    }
+
+    val people = listOf(Person("Alice", 29), Person("Bob", 31))
+    val result1 = people.maxByOrNull { it.age }
+    val result2 = people.maxByOrNull(Person::age)
+    // You can't assign a function to a variable only a lambda
+    // val result3 = people.maxByOrNull(Person::isOlderThan) // It doesn't compile
+
+    // Using function reference instead
+    fun isEvenFun(i: Int) = i % 2 == 0
+    val predicateIsEven = ::isEvenFun
+
+    // Passing function reference as an argument
+    val list3 = listOf(1, 2, 3, 4, 5)
+    println(list3.any(::isEvenFun))
+    println(list3.filter(::isEvenFun))
+
+    // Bound and non-bound references
+    val agePredicate: (Person, Int) -> Boolean = Person::isOlder
+
+    // Not bound reference is a reference to a function that is not associated with an instance. Example:
+//    fun isOlderThan(other: Person): Boolean {
+//        return age > other.age
+//    }
+
+
+    val alice = Person("Alice", 29)
+    agePredicate(alice, 21)
+
+    // Bound Reference, it's a reference to a function that is associated with an instance. Example:
+    val agePredicateAlice = alice::isOlder
+    agePredicateAlice(21)
 }
+
+enum class Gender { MALE, FEMALE }
 
 fun String?.isEmptyOrNull() = this.isNullOrEmpty() || this.isEmpty()
 
